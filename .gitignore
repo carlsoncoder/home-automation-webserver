@@ -1,0 +1,8 @@
+.DS_Store
+.idea/
+/config/config.js
+/config/config.development.js
+/config/config.production.js
+node_modules/
+test/coverage/
+__TODO__
