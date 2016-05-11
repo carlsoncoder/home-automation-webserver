@@ -1,5 +1,7 @@
 var debug = require('debug')('home-automation-webserver:server');
 var http = require('http');
+var https = require('https');
+var fs = require('fs');
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -7,6 +9,11 @@ var bodyParser = require('body-parser');
 
 //initialize config options
 var configOptions = require('./config/config.js');
+
+var certificates = {
+    key: fs.readFileSync('certs/carlsonhomeautomation_com.key'),
+    cert: fs.readFileSync('certs/carlsonhomeautomation_com_fullchain.pem')
+};
 
 //mongoose
 var mongoose = require('mongoose');
@@ -130,7 +137,8 @@ app.set('port', port);
 var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 app.set('ipAddress', ipAddress);
 
-var server = http.createServer(app);
+//var server = http.createServer(app);
+var server = https.createServer(certificates, app);
 server.listen(port, ipAddress);
 server.on('error', onError);
 server.on('listening', onListening);
