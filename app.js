@@ -45,10 +45,10 @@ mqttServer.on('clientConnected', function(client) {
 
 // fired when a message is received
 mqttServer.on('published', function(packet, client) {
-    console.log('Published : ', packet);
+    console.log('RECEIVED MESSAGE FROM: ', packet.topic);
     if (typeof(packet.payload) !== 'string') {
         var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
-        console.log(jsonPayload.Age + ';;' + jsonPayload.Name + ';;' + jsonPayload.IsTest);
+        console.log(jsonPayload);
     }
     else {
         console.log(packet.payload);
@@ -148,19 +148,35 @@ function logErrorToMongo(error) {
     });
 }
 
-// TODO: JUSTIN: REMOVE THIS TESTING FUNCTION!
-app.post('/testing/sendMessage', function(req, res) {
+// TODO: JUSTIN: REMOVE THESE TESTING FUNCTIONS!
+app.post('/testing/sendMessage/rpi/main', function(req, res) {
+    var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
     var message = {
-        topic: 'pythonTest/garage1',
-        payload: 'Test Message 1234 Carlson',
+        topic: '/rpi-garage-main/healthCheck',
+        payload: JSON.stringify(payload),
         qos: 0,
         retain: false
     };
 
     mqttServer.publish(message, function() {
         res.send('Message processed succesfully!');
-    })
+    });
 });
+
+app.post('/testing/sendMessage/rpi/barn', function(req, res) {
+    var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
+    var message = {
+        topic: '/rpi-garage-barn/healthCheck',
+        payload: JSON.stringify(payload),
+        qos: 0,
+        retain: false
+    };
+
+    mqttServer.publish(message, function() {
+        res.send('Message processed succesfully!');
+    });
+});
+// END TESTING FUNCTIONS TO DELETE
 
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
     console.log('listening on port 4443 - HTTPS');
