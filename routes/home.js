@@ -9,7 +9,7 @@ var auth = jwt({secret: configOptions.JWT_SECRET_KEY, userProperty: 'payload'});
 
 // GET '/'
 router.get('/', function(req, res, next) {
-    res.status(200).json({message: 'Hello from Carlson Home Automation Web Server!'});
+    res.status(200).json({message: 'Hello from Carlson Home Automation Web Server - Powered by AWS EC2!'});
 });
 
 // POST '/login'

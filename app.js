@@ -1,19 +1,59 @@
-var debug = require('debug')('home-automation-webserver:server');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
+var mosca = require('mosca');
 var bodyParser = require('body-parser');
+
+const CERT_KEY_PATH = 'certs/carlsonhomeautomation_com.key';
+const CERT_PATH = 'certs/carlsonhomeautomation_com_fullchain.pem';
 
 //initialize config options
 var configOptions = require('./config/config.js');
 
-var certificates = {
-    key: fs.readFileSync('certs/carlsonhomeautomation_com.key'),
-    cert: fs.readFileSync('certs/carlsonhomeautomation_com_fullchain.pem')
+var certificateConfiguration = {
+    key: fs.readFileSync(CERT_KEY_PATH),
+    cert: fs.readFileSync(CERT_PATH)
 };
+
+// MOSCA
+var moscaSettings = {
+    port: 8883,
+    logger: {
+        name: "home-automation-mqtt-broker",
+        level: 40
+    },
+    secure: {
+        keyPath: CERT_KEY_PATH,
+        certPath: CERT_PATH
+    }
+};
+
+var mqttServer = new mosca.Server(moscaSettings);
+mqttServer.on('ready', setup);
+
+function setup() {
+    console.log('The Mosca server is running!');
+}
+
+// fired when a client is connected
+mqttServer.on('clientConnected', function(client) {
+    console.log('client connected', client.id);
+});
+
+// fired when a message is received
+mqttServer.on('published', function(packet, client) {
+    console.log('Published : ', packet);
+    if (typeof(packet.payload) !== 'string') {
+        var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
+        console.log(jsonPayload.Age + ';;' + jsonPayload.Name + ';;' + jsonPayload.IsTest);
+    }
+    else {
+        console.log(packet.payload);
+    }
+});
 
 //mongoose
 var mongoose = require('mongoose');
@@ -55,7 +95,7 @@ app.use(function(req, res, next) {
 });
 
 // development error handler - will print stack traces
-if (process.env.NODE_ENV === 'development')
+if (configOptions.MY_NODE_ENV === 'development')
 {
     app.use(function(err, req, res, next) {
         logErrorToMongo(err);
@@ -68,22 +108,6 @@ app.use(function(err, req, res, next) {
     logErrorToMongo(err);
     res.status(err.status || 500).json({errorMessage: err.message});
 });
-
-function normalizePort(portValue) {
-    var port = parseInt(portValue, 10);
-
-    if (isNaN(port)) {
-        // named pipe
-        return portValue;
-    }
-
-    if (port >= 0) {
-        // port number
-        return port;
-    }
-
-    return false;
-}
 
 function onError(error) {
     if (error.syscall !== 'listen') {
@@ -114,12 +138,6 @@ function onError(error) {
     }
 }
 
-function onListening() {
-    var address = server.address();
-    var bind = typeof addr === 'string' ? 'pipe ' + address : 'port ' + address.port;
-    debug('Listening on ' + bind);
-}
-
 function logErrorToMongo(error) {
     console.log(error.message + '--' + error + '--' + error.stack);
     exceptionRepository.saveException(error, function(err, savedError) {
@@ -130,21 +148,44 @@ function logErrorToMongo(error) {
     });
 }
 
-// Get port from environment and store in Express */
-var port = normalizePort(process.env.OPENSHIFT_NODEJS_PORT || '3000');
-app.set('port', port);
+// TODO: JUSTIN: REMOVE THIS TESTING FUNCTION!
+app.post('/testing/sendMessage', function(req, res) {
+    var message = {
+        topic: 'pythonTest/garage1',
+        payload: 'Test Message 1234 Carlson',
+        qos: 0,
+        retain: false
+    };
 
-var ipAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
-app.set('ipAddress', ipAddress);
+    mqttServer.publish(message, function() {
+        res.send('Message processed succesfully!');
+    })
+});
 
-//var server = http.createServer(app);
-var server = https.createServer(certificates, app);
-server.listen(port, ipAddress);
-server.on('error', onError);
-server.on('listening', onListening);
+// TODO: JUSTIN: REMOVE THIS CODE!
+var UserModel = mongoose.model('User');
+var newUser = new UserModel();
+newUser.username = 'justin';
+newUser.setPassword('justin');
 
-// Final catch of any errors in the process
-// Catch any uncaught errors that weren't wrapped in a try/catch statement
+console.log('trying to save new user');
+newUser.save(function(err, savedRecord) {
+    console.log('user created successfully!');
+});
+// END REMOVE
+
+var httpServer = http.createServer(app).listen(8080, function() {
+    console.log('listening on port 8080 - HTTP');
+});
+
+var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
+    console.log('listening on port 4443 - HTTPS');
+});
+
+httpServer.on('error', onError);
+secureServer.on('error', onError);
+
+// Final catch of any errors in the process - Catch any uncaught errors that weren't wrapped in a try/catch statement
 process.on('uncaughtException', function(err) {
     logErrorToMongo(err);
 });
