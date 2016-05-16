@@ -162,27 +162,9 @@ app.post('/testing/sendMessage', function(req, res) {
     })
 });
 
-// TODO: JUSTIN: REMOVE THIS CODE!
-var UserModel = mongoose.model('User');
-var newUser = new UserModel();
-newUser.username = 'justin';
-newUser.setPassword('justin');
-
-console.log('trying to save new user');
-newUser.save(function(err, savedRecord) {
-    console.log('user created successfully!');
-});
-// END REMOVE
-
-var httpServer = http.createServer(app).listen(8080, function() {
-    console.log('listening on port 8080 - HTTP');
-});
-
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
     console.log('listening on port 4443 - HTTPS');
 });
-
-httpServer.on('error', onError);
 secureServer.on('error', onError);
 
 // Final catch of any errors in the process - Catch any uncaught errors that weren't wrapped in a try/catch statement
