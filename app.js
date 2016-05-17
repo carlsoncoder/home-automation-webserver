@@ -4,7 +4,6 @@ var fs = require('fs');
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
-var mosca = require('mosca');
 var bodyParser = require('body-parser');
 
 //initialize config options
@@ -15,54 +14,8 @@ var certificateConfiguration = {
     cert: fs.readFileSync(configOptions.CERT_PATH)
 };
 
-// MOSCA
-var moscaSettings = {
-    port: 8883,
-    logger: {
-        name: "home-automation-mqtt-broker",
-        level: 40
-    },
-    secure: {
-        keyPath: configOptions.CERT_KEY_PATH,
-        certPath: configOptions.CERT_PATH
-    }
-};
-
-var mqttServer = new mosca.Server(moscaSettings);
-mqttServer.on('ready', setup);
-
-function setup() {
-    console.log('The Mosca server is running!');
-    mqttServer.authenticate = mosca_authenticate;
-}
-
-function mosca_authenticate(client, username, password, callback) {
-    var authenticated = false;
-    if (configOptions.isClientIdValid(client.id)) {
-        if (username.toString() === configOptions.MOSCA_USERNAME && password.toString() === configOptions.MOSCA_PASSWORD) {
-            authenticated = true;
-        }
-    }
-    
-    callback(null, authenticated)
-}
-
-// fired when a client is connected
-mqttServer.on('clientConnected', function(client) {
-    console.log('client connected', client.id);
-});
-
-// fired when a message is received
-mqttServer.on('published', function(packet, client) {
-    console.log('RECEIVED MESSAGE FROM: ', packet.topic);
-    if (typeof(packet.payload) !== 'string') {
-        var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
-        console.log(jsonPayload);
-    }
-    else {
-        console.log(packet.payload);
-    }
-});
+// initialize MOSCA MQTT broker - the 'getInstance()' call forces it to load and init
+var mqttBroker = require('./services/mqtt-server.js').getInstance();
 
 //mongoose
 var mongoose = require('mongoose');
@@ -157,53 +110,10 @@ function logErrorToMongo(error) {
     });
 }
 
-// TODO: JUSTIN: REMOVE DEBUG CODE!
-app.post('/testing/sendMessage/rpi/maindooraction', function(req, res) {
-    var payload = { action: 'open' };
-    var message = {
-        topic: '/rpi-garage-main/doorAction',
-        payload: JSON.stringify(payload),
-        qos: 0,
-        retain: false
-    };
-
-    mqttServer.publish(message, function() {
-        res.send('Message processed succesfully!');
-    });
-});
-
-app.post('/testing/sendMessage/rpi/main', function(req, res) {
-    var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
-    var message = {
-        topic: '/rpi-garage-main/healthCheck',
-        payload: JSON.stringify(payload),
-        qos: 0,
-        retain: false
-    };
-
-    mqttServer.publish(message, function() {
-        res.send('Message processed succesfully!');
-    });
-});
-
-app.post('/testing/sendMessage/rpi/barn', function(req, res) {
-    var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
-    var message = {
-        topic: '/rpi-garage-barn/healthCheck',
-        payload: JSON.stringify(payload),
-        qos: 0,
-        retain: false
-    };
-
-    mqttServer.publish(message, function() {
-        res.send('Message processed succesfully!');
-    });
-});
-// TODO: JUSTIN: END REMOVE DEBUG CODE!
-
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
     console.log('listening on port 4443 - HTTPS');
 });
+
 secureServer.on('error', onError);
 
 // Final catch of any errors in the process - Catch any uncaught errors that weren't wrapped in a try/catch statement
