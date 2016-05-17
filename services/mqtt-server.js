@@ -1,52 +1,6 @@
 var mosca = require('mosca');
 var configOptions = require('../config/config.js');
 
-/*
-// TODO: JUSTIN: REMOVE DEBUG CODE!
-app.post('/testingSendMessageRpiMainDoorAction', function(req, res) {
-    var payload = { action: 'open' };
-    var message = {
-        topic: '/rpi-garage-main/doorAction',
-        payload: JSON.stringify(payload),
-        qos: 0,
-        retain: false
-    };
-
-    mqttServer.publish(message, function() {
-        res.send('Message processed succesfully!');
-    });
-});
-
-app.post('/testingSendMessageRpiMain', function(req, res) {
-    var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
-    var message = {
-        topic: '/rpi-garage-main/healthCheck',
-        payload: JSON.stringify(payload),
-        qos: 0,
-        retain: false
-    };
-
-    mqttServer.publish(message, function() {
-        res.send('Message processed succesfully!');
-    });
-});
-
-app.post('testingSendMessageRpiBarn', function(req, res) {
-    var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
-    var message = {
-        topic: '/rpi-garage-barn/healthCheck',
-        payload: JSON.stringify(payload),
-        qos: 0,
-        retain: false
-    };
-
-    mqttServer.publish(message, function() {
-        res.send('Message processed succesfully!');
-    });
-});
-// TODO: JUSTIN: END REMOVE DEBUG CODE!
-*/
-
 var mqttServer = null;
 module.exports.getInstance = function() {
     if (!mqttServer) {

@@ -14,9 +14,6 @@ var certificateConfiguration = {
     cert: fs.readFileSync(configOptions.CERT_PATH)
 };
 
-// initialize MOSCA MQTT broker - the 'getInstance()' call forces it to load and init
-var mqttBroker = require('./services/mqtt-server.js').getInstance();
-
 //mongoose
 var mongoose = require('mongoose');
 require('./models/Users');
@@ -45,9 +42,11 @@ app.use(passport.initialize());
 // define routing for Express
 var home = require('./routes/home');
 var admin = require('./routes/admin');
+var garage = require('./routes/garage');
 
 app.use('/', home);
 app.use('/admin', admin);
+app.use('/garage', garage);
 
 // catch 404 errors and route to error handler
 app.use(function(req, res, next) {
@@ -112,6 +111,9 @@ function logErrorToMongo(error) {
 
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
     console.log('listening on port 4443 - HTTPS');
+    
+    // initialize MOSCA MQTT broker - the 'getInstance()' call forces it to load and init
+    var mqttBroker = require('./services/mqtt-server.js').getInstance();
 });
 
 secureServer.on('error', onError);
