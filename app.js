@@ -38,16 +38,8 @@ function setup() {
 
 function mosca_authenticate(client, username, password, callback) {
     var authenticated = false;
-    
-    // TODO: JUSTIN: REMOVE DEBUG CODE!
-    console.log('IN MOSCA AUTHENTICATE METHOD');
-    console.log(client);
-    console.log(username);
-    console.log(password);
-    // TODO: JUSTIN: END REMOVE DEBUG CODE!
-    
     if (configOptions.isClientIdValid(client.id)) {
-        if (username === configOptions.MOSCA_USERNAME && password === configOptions.MOSCA_PASSWORD) {
+        if (username.toString() === configOptions.MOSCA_USERNAME && password.toString() === configOptions.MOSCA_PASSWORD) {
             authenticated = true;
         }
     }
