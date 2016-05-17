@@ -7,15 +7,12 @@ var logger = require('morgan');
 var mosca = require('mosca');
 var bodyParser = require('body-parser');
 
-const CERT_KEY_PATH = 'certs/carlsonhomeautomation_com.key';
-const CERT_PATH = 'certs/carlsonhomeautomation_com_fullchain.pem';
-
 //initialize config options
 var configOptions = require('./config/config.js');
 
 var certificateConfiguration = {
-    key: fs.readFileSync(CERT_KEY_PATH),
-    cert: fs.readFileSync(CERT_PATH)
+    key: fs.readFileSync(configOptions.CERT_KEY_PATH),
+    cert: fs.readFileSync(configOptions.CERT_PATH)
 };
 
 // MOSCA
@@ -26,8 +23,8 @@ var moscaSettings = {
         level: 40
     },
     secure: {
-        keyPath: CERT_KEY_PATH,
-        certPath: CERT_PATH
+        keyPath: configOptions.CERT_KEY_PATH,
+        certPath: configOptions.CERT_PATH
     }
 };
 
@@ -36,6 +33,26 @@ mqttServer.on('ready', setup);
 
 function setup() {
     console.log('The Mosca server is running!');
+    mqttServer.authenticate = mosca_authenticate;
+}
+
+function mosca_authenticate(client, username, password, callback) {
+    var authenticated = false;
+    
+    // TODO: JUSTIN: REMOVE DEBUG CODE!
+    console.log('IN MOSCA AUTHENTICATE METHOD');
+    console.log(client);
+    console.log(username);
+    console.log(password);
+    // TODO: JUSTIN: END REMOVE DEBUG CODE!
+    
+    if (configOptions.isClientIdValid(client.id)) {
+        if (username === configOptions.MOSCA_USERNAME && password === configOptions.MOSCA_PASSWORD) {
+            authenticated = true;
+        }
+    }
+    
+    callback(null, authenticated)
 }
 
 // fired when a client is connected
@@ -148,7 +165,21 @@ function logErrorToMongo(error) {
     });
 }
 
-// TODO: JUSTIN: REMOVE THESE TESTING FUNCTIONS!
+// TODO: JUSTIN: REMOVE DEBUG CODE!
+app.post('/testing/sendMessage/rpi/maindooraction', function(req, res) {
+    var payload = { action: 'open' };
+    var message = {
+        topic: '/rpi-garage-main/doorAction',
+        payload: JSON.stringify(payload),
+        qos: 0,
+        retain: false
+    };
+
+    mqttServer.publish(message, function() {
+        res.send('Message processed succesfully!');
+    });
+});
+
 app.post('/testing/sendMessage/rpi/main', function(req, res) {
     var payload = { firstValue: '123', secondValue: '456', shouldOpen: 1 };
     var message = {
@@ -176,7 +207,7 @@ app.post('/testing/sendMessage/rpi/barn', function(req, res) {
         res.send('Message processed succesfully!');
     });
 });
-// END TESTING FUNCTIONS TO DELETE
+// TODO: JUSTIN: END REMOVE DEBUG CODE!
 
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
     console.log('listening on port 4443 - HTTPS');
