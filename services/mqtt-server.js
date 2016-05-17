@@ -44,12 +44,18 @@ module.exports.getInstance = function() {
         // fired when a message is received
         mqttServer.on('published', function(packet, client) {
             console.log('RECEIVED MESSAGE FROM: ', packet.topic);
-            if (typeof(packet.payload) !== 'string') {
-                var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
-                console.log(jsonPayload);
+
+            if (packet.payload) {
+                if (typeof(packet.payload) !== 'string') {
+                    var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
+                    console.log(jsonPayload);
+                }
+                else {
+                    console.log(packet.payload);
+                }
             }
             else {
-                console.log(packet.payload);
+                console.log('packet.payload was null or undefined')
             }
         });
     }
