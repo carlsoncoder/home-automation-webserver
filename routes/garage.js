@@ -6,15 +6,12 @@ var configOptions = require('../config/config.js');
 var mqttBroker = require('../services/mqtt-server.js').getInstance();
 var auth = jwt({secret: configOptions.JWT_SECRET_KEY, userProperty: 'payload'});
 
-// TODO: JUSTIN:  Add in the "auth" middleware
-    // Instead of "router.post('/', function(req, res, next)", we should have "router.post('/', auth, function(req, res, next)"
-
-// TODO: JUSTIN:  Add in some "GET's" here so we can get the current status and/or the current health check
 // POST - /garage
-router.post('/', function(req, res, next) {
+router.post('/', auth, function(req, res, next) {
+    console.log(req.body);
     var requestedTopic = req.body.topic;
     var clientId = req.body.clientId;
-    var payload = JSON.stringify(req.body.payload);
+    var payload = JSON.stringify(req.body.messagePayload);
 
     var topic = '/' + clientId + '/' + requestedTopic;
 

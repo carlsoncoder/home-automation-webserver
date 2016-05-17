@@ -4,6 +4,7 @@ var configOptions = require('../config/config.js');
 var mqttServer = null;
 module.exports.getInstance = function() {
     if (!mqttServer) {
+        
         // lazy-load and initialize the MQTT server
         var moscaSettings = {
             port: 8883,
@@ -21,8 +22,8 @@ module.exports.getInstance = function() {
         mqttServer.on('ready', setup);
 
         function setup() {
-            console.log('The Mosca server is running!');
             mqttServer.authenticate = mosca_authenticate;
+            console.log('The MQTT broker is now running on port: ' + moscaSettings.port);
         }
 
         function mosca_authenticate(client, username, password, callback) {
@@ -38,7 +39,7 @@ module.exports.getInstance = function() {
         
         // fired when a client is connected
         mqttServer.on('clientConnected', function(client) {
-            console.log('client connected', client.id);
+            console.log('MQTT Client Connected: ', client.id);
         });
         
         // fired when a message is received
@@ -53,9 +54,6 @@ module.exports.getInstance = function() {
                 else {
                     console.log(packet.payload);
                 }
-            }
-            else {
-                console.log('packet.payload was null or undefined')
             }
         });
     }
