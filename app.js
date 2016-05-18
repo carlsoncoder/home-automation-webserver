@@ -16,8 +16,9 @@ var certificateConfiguration = {
 
 //mongoose
 var mongoose = require('mongoose');
-require('./models/Users');
-require('./models/Exceptions');
+require('./models/Users.js');
+require('./models/Exceptions.js');
+require('./models/GarageStatuses.js');
 
 // Exception repository
 var exceptionRepository = require('./services/exceptionrepository.js');
