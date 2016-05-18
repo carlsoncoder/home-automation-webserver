@@ -20,7 +20,10 @@ require('./models/Users');
 require('./models/Exceptions');
 
 // Exception repository
-var exceptionRepository = require('./services/exceptionrepository');
+var exceptionRepository = require('./services/exceptionrepository.js');
+
+// Garage Status repository
+var garageStatusRepository = require('./services/garagestatusrepository.js');
 
 //passport
 var passport = require('passport');
@@ -114,6 +117,14 @@ var secureServer = https.createServer(certificateConfiguration, app).listen(4443
     
     // initialize MOSCA MQTT broker - the 'getInstance()' call forces it to load and init
     var mqttBroker = require('./services/mqtt-server.js').getInstance();
+
+    // reset the garage status records
+    garageStatusRepository.initializeOnStartup(configOptions.getValidGarageClientIds(), function(err) {
+        if (err) {
+            // CRASH THE APP!
+            process.exit(1);
+        }
+    });
 });
 
 secureServer.on('error', onError);
