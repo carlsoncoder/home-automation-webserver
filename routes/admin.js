@@ -1,9 +1,9 @@
 var express = require('express');
-var router = express.Router();
-var exceptionRepository = require('../services/exceptionrepository');
 var jwt = require('express-jwt');
 var configOptions = require('../config/config.js');
+var exceptionRepository = require('../services/exceptionrepository.js');
 
+var router = express.Router();
 var auth = jwt({secret: configOptions.JWT_SECRET_KEY, userProperty: 'payload'});
 
 // GET '/admin/exceptions'

@@ -1,4 +1,3 @@
-var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var express = require('express');
@@ -14,7 +13,7 @@ var certificateConfiguration = {
     cert: fs.readFileSync(configOptions.CERT_PATH)
 };
 
-//mongoose
+// Mongoose
 var mongoose = require('mongoose');
 require('./models/Users.js');
 require('./models/Exceptions.js');
@@ -26,21 +25,19 @@ var exceptionRepository = require('./services/exceptionrepository.js');
 // Garage Status repository
 var garageStatusRepository = require('./services/garagestatusrepository.js');
 
-//passport
+// Passport
 var passport = require('passport');
-require('./config/passport');
+require('./config/passport.js');
 
-//connect to MongoDB
+// Connect to MongoDB
 var mongoConnectionString = configOptions.MONGO_DB_CONNECTION_STRING;
 mongoose.connect(mongoConnectionString);
 
 // Express setup
 var app = express();
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(passport.initialize());
 
 // define routing for Express
@@ -114,15 +111,15 @@ function logErrorToMongo(error) {
 }
 
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
-    console.log('listening on port 4443 - HTTPS');
+    console.log('HTTPS listening on port 4443');
     
-    // initialize MOSCA MQTT broker - the 'getInstance()' call forces it to load and init
+    // initialize MOSCA MQTT broker - the 'getInstance()' call forces it to load and init, even though we aren't doing anything with it here
     var mqttBroker = require('./services/mqtt-server.js').getInstance();
 
     // reset the garage status records
     garageStatusRepository.initializeOnStartup(configOptions.getValidGarageClientIds(), function(err) {
         if (err) {
-            // CRASH THE APP!
+            // CRASH THE APP IF THIS FAILS!
             process.exit(1);
         }
     });

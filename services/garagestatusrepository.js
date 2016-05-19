@@ -61,7 +61,7 @@ garageStatusRepository.initializeOnStartup = function(garageClientIds, callback)
             callback(err)
         }
         else {
-            // insert them back in
+            // insert them back in with the default values
             garageClientIds.forEach(function(clientId) {
                 var garageStatus = new GarageStatus();
                 garageStatus.clientId = clientId;

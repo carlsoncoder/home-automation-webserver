@@ -1,10 +1,10 @@
 var express = require('express');
-var router = express.Router();
 var passport = require('passport');
 var jwt = require('express-jwt');
 var configOptions = require('../config/config.js');
-var userRepository = require('../services/userrepository');
+var userRepository = require('../services/userrepository.js');
 
+var router = express.Router();
 var auth = jwt({secret: configOptions.JWT_SECRET_KEY, userProperty: 'payload'});
 
 // GET '/'
