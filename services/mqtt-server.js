@@ -21,6 +21,10 @@ function clientConnected(client) {
 }
 
 function handlePublishedMessage(packet, client) {
+    if (!packet || !client) {
+        return;
+    }
+    
     console.log('Received message with topic [' + packet.topic + '] from clientId: ' + client.id);
     
     // if the topic StartsWith "/garage/", and contains "/reply"
