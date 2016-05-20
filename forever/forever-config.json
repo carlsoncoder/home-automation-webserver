@@ -1,7 +1,0 @@
-{
-    "uid": "home-automation-webserver",
-    "append": true,
-    "watch": true,
-    "script": "app.js",
-    "sourceDir": "/home/ubuntu/home-automation-webserver"
-}
