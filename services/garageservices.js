@@ -8,7 +8,7 @@ garageServices.handleMessageReply = function(packet, client) {
     // three possible queues could (*should*) come into this function
         //      /garage/{clientId}/healthCheck/reply
         //      /garage/{clientId}/doorStatus/reply
-        //      /garage/{clientId}/doorAction/reply
+        //      /garage/{clientId}/doorAction/reply  **Note, we don't actually care about this one, since we have to re-poll anyway for the status later (give it time to open/close)
 
     // parse the clientId first
     var startIndex = packet.topic.indexOf('/garage/') + 8;
@@ -22,7 +22,7 @@ garageServices.handleMessageReply = function(packet, client) {
     if (packet.topic.indexOf('/healthCheck/reply') > -1) {
         garageStatus.lastHealthCheckDateTime = currentUtcDate;
     }
-    else if (packet.topic.indexOf('/doorStatus/reply') > -1 || packet.topic.indexOf('/doorAction/reply') > -1) {
+    else if (packet.topic.indexOf('/doorStatus/reply') > -1) {
         garageStatus.lastDoorStatusDateTime = currentUtcDate;
 
         var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
@@ -30,7 +30,7 @@ garageServices.handleMessageReply = function(packet, client) {
     }
     else {
         shouldUpdate = false;
-        console.log('Ignoring invalid packet with topic: ' + packet.topic);
+        console.log('GarageServices - Ignoring packet with topic: ' + packet.topic);
     }
 
     if (shouldUpdate === true) {
