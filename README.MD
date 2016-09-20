@@ -13,10 +13,12 @@ You will need to setup two inbound port rules on the Security Group assigned to 
 
 
 Additionally, you will need to setup a port forwarding rule on the EC2 instance to direct inbound 443 traffic to 4443.  You can do this using the iptables command on the EC2 instance:
-            
+
         sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to 4443
 
 *Note - I would recommend you look into the 'iptables-persistent' package to persist these firewall rules, as they will otherwise be removed upon reboot.  More information can be found in this very helpful post [here.](https://www.thomas-krenn.com/en/wiki/Saving_Iptables_Firewall_Rules_Permanently "iptables-persistent")*
+
+*Another Note - See an example of my script I used with iptables-persistent [here.](https://gist.github.com/carlsoncoder/f7e517c9ba520c7beef6bc14812399f9 "iptables-persistent-setup-gist")*
 
 You will also need an SSL certificate and the private key file as well.  These should be placed in the root of the directory in a folder called "certs".  Note this is NOT included in this repo.
 
@@ -25,7 +27,7 @@ Lastly, you will need to create a file called "config.js" in the "config" folder
         var garageClientIds = ['client-id-1', 'client-id-2'];
         var validClientIds = [];
         validClientIds.push.apply(validClientIds, garageClientIds);
-        
+
         var options = {
             JWT_SECRET_KEY :                "your-JWT-secret-key",
             MY_NODE_ENV :                   "production",
@@ -35,24 +37,47 @@ Lastly, you will need to create a file called "config.js" in the "config" folder
             CERT_KEY_PATH:                  "certs/nameOfCertPrivateKey",
             CERT_PATH:                      "certs/nameOfMainCertificate"
         };
-        
+
         options.isClientIdValid = function(clientId) {
             if (validClientIds.indexOf(clientId) > -1) {
                 return true;
             }
-            
+
             return false;
         };
-        
+
         options.getValidGarageClientIds = function() {
             return garageClientIds;
         };
-        
+
         module.exports = options;
 
 These values are pretty straightforward.  You would specifically need to fill in lines 1, 6, and 9-12 with your appropriate values.  Note this file is NOT included in this repo.
 
-Check out  here.
+Once you have all of this setup, you'll want to cofigure your NodeJS instance to start automatically on startup.  For this, I use [forever.](https://www.npmjs.com/package/forever "Forever - NPM")  You can install this with the following command:
+
+        sudo npm install -g forever
+
+I've already included a "forever-start" file in the repo as 'forever-start.sh'.  There isn't much to it:
+
+        #!/usr/bin/env bash
+        forever start -a app.js
+
+We'll now make a startup script that calls our forever-start.sh script.  Create a file (doesn't matter where, just remember the full path to it) called "start-webserver-on-boot.sh".  Put the following in it:
+
+        #!/usr/bin/env bash
+        cd /home/ubuntu/home-automation-webserver/
+        ./forever-start.sh
+
+Now, open up your CRON editor with the follwowing command:
+
+        sudo crontab -e
+
+Add the following line, then save the file (making sure the path is the same as where you saved your file):
+
+        @reboot /home/ubuntu/start-webserver-on-boot.sh
+
+And that's it.  If you ever wanted to manually stop the forever instance, you can just run the "forever-stop.sh" bash script in the repo.
 
 Feel free to reach out to me at Twitter via [@carlsoncoder](https://twitter.com/carlsoncoder "@carlsoncoder") with any questions, or check out [my blog.](http://www.carlsoncoder.com/ "Carlson Coder Blog")
 
