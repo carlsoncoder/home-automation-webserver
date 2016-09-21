@@ -19,16 +19,15 @@ router.get('/status', auth, function(req, res, next) {
     });
 });
 
-// GET - '/garage/statusByClientId'
-router.get('/statusByClientId', auth, function(req, res, next) {
-    var clientId = req.body.clientId;
+// GET - '/garage/statusByClientId/rpi-garage-main'
+router.get('/statusByClientId/:clientId', auth, function(req, res, next) {
+    var clientId = req.params.clientId;
     garageStatusRepository.findStatusRecord(clientId, function(err, garageStatus) {
         if (err) {
             return res.status(500).json(err);
         }
 
         return res.status(200).json(garageStatus);
-
     });
 });
 
@@ -87,6 +86,8 @@ function buildDoorActionMessage(clientId, isOpen) {
         qos: 0,
         retain: false
     };
+
+    console.log('Door Action Message: ' + JSON.stringify(message));
     
     return message;
 }
