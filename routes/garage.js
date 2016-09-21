@@ -82,7 +82,7 @@ function buildDoorActionMessage(clientId, isOpen) {
 
     var message = {
         topic: topic,
-        payload: payload,
+        payload: JSON.stringify(payload),
         qos: 0,
         retain: false
     };
