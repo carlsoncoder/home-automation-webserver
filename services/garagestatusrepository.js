@@ -10,7 +10,9 @@ garageStatusRepository.findStatusRecord = function(clientId, callback) {
             return callback(err);
         }
 
-        return callback(err, garageStatus);
+        var modifiedStatus = ensureAllFields(garageStatus);
+
+        return callback(err, modifiedStatus);
     });
 };
 
@@ -21,7 +23,12 @@ garageStatusRepository.loadAll = function(callback) {
             return callback(err);
         }
 
-        return callback(null, statuses);
+        var returnStatuses = [];
+        statuses.forEach(function(status) {
+            returnStatuses.push(ensureAllFields(status));
+        });
+
+        return callback(null, returnStatuses);
     });
 };
 
@@ -75,5 +82,27 @@ garageStatusRepository.initializeOnStartup = function(garageClientIds, callback)
         }
     })
 };
+
+function ensureAllFields(status) {
+    var updatedStatus = {clientId: '', lastHealthCheckDateTime: '', lastDoorStatusDateTime: '', currentDoorStatus: ''};
+
+    if (status.clientId) {
+        updatedStatus.clientId = status.clientId;
+    }
+
+    if (status.lastHealthCheckDateTime) {
+        updatedStatus.lastHealthCheckDateTime = status.lastHealthCheckDateTime;
+    }
+
+    if (status.lastDoorStatusDateTime) {
+        updatedStatus.lastDoorStatusDateTime = status.lastDoorStatusDateTime;
+    }
+
+    if (status.currentDoorStatus) {
+        updatedStatus.currentDoorStatus = status.currentDoorStatus;
+    }
+
+    return updatedStatus;
+}
 
 module.exports = garageStatusRepository;
