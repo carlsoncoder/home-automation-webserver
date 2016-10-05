@@ -10,9 +10,7 @@ garageStatusRepository.findStatusRecord = function(clientId, callback) {
             return callback(err);
         }
 
-        var modifiedStatus = ensureAllFields(garageStatus);
-
-        return callback(err, modifiedStatus);
+        return callback(null, garageStatus);
     });
 };
 
@@ -23,12 +21,7 @@ garageStatusRepository.loadAll = function(callback) {
             return callback(err);
         }
 
-        var returnStatuses = [];
-        statuses.forEach(function(status) {
-            returnStatuses.push(ensureAllFields(status));
-        });
-
-        return callback(null, returnStatuses);
+        return callback(null, statuses);
     });
 };
 
@@ -62,16 +55,21 @@ garageStatusRepository.updateStatusRecord = function(garageStatus, callback) {
     });
 };
 
-garageStatusRepository.initializeOnStartup = function(garageClientIds, callback) {
+garageStatusRepository.initializeOnStartup = function(garageClientDetails, callback) {
     GarageStatus.remove({}, function(err) {
         if (err) {
             callback(err)
         }
         else {
             // insert them back in with the default values
-            garageClientIds.forEach(function(clientId) {
+            garageClientDetails.forEach(function(garageDetail) {
                 var garageStatus = new GarageStatus();
-                garageStatus.clientId = clientId;
+                garageStatus.clientId = garageDetail.clientId;
+                garageStatus.description = garageDetail.description;
+                garageStatus.sortOrder = garageDetail.sortOrder;
+                garageStatus.lastHealthCheckDateTime = null;
+                garageStatus.lastDoorStatusDateTime = null;
+                garageStatus.currentDoorStatus = null;
                 garageStatus.save(function(err, newStatus) {
                    if (err) {
                        callback(err);
@@ -82,27 +80,5 @@ garageStatusRepository.initializeOnStartup = function(garageClientIds, callback)
         }
     })
 };
-
-function ensureAllFields(status) {
-    var updatedStatus = {clientId: '', lastHealthCheckDateTime: '', lastDoorStatusDateTime: '', currentDoorStatus: ''};
-
-    if (status.clientId) {
-        updatedStatus.clientId = status.clientId;
-    }
-
-    if (status.lastHealthCheckDateTime) {
-        updatedStatus.lastHealthCheckDateTime = status.lastHealthCheckDateTime;
-    }
-
-    if (status.lastDoorStatusDateTime) {
-        updatedStatus.lastDoorStatusDateTime = status.lastDoorStatusDateTime;
-    }
-
-    if (status.currentDoorStatus) {
-        updatedStatus.currentDoorStatus = status.currentDoorStatus;
-    }
-
-    return updatedStatus;
-}
 
 module.exports = garageStatusRepository;

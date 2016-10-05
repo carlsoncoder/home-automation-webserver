@@ -24,10 +24,21 @@ You will also need an SSL certificate and the private key file as well.  These s
 
 Lastly, you will need to create a file called "config.js" in the "config" folder.  You will need to fill in the appropriate values:
 
-        var garageClientIds = ['client-id-1', 'client-id-2'];
-        var validClientIds = [];
-        validClientIds.push.apply(validClientIds, garageClientIds);
-
+        var garageClientIds = ['rpi-garage-1', 'rpi-garage-2'];
+        
+        var garageClientDetails = [
+            {
+                clientId: 'rpi-garage-1',
+                description: 'House Garage',
+                sortOrder: 1
+            },
+            {
+                clientId: 'rpi-garage-2',
+                description: 'Secondary Garage',
+                sortOrder: 2
+            }
+        ];
+        
         var options = {
             JWT_SECRET_KEY :                "your-JWT-secret-key",
             MY_NODE_ENV :                   "production",
@@ -37,19 +48,23 @@ Lastly, you will need to create a file called "config.js" in the "config" folder
             CERT_KEY_PATH:                  "certs/nameOfCertPrivateKey",
             CERT_PATH:                      "certs/nameOfMainCertificate"
         };
-
+        
         options.isClientIdValid = function(clientId) {
-            if (validClientIds.indexOf(clientId) > -1) {
+            if (garageClientIds.indexOf(clientId) > -1) {
                 return true;
             }
-
+            
             return false;
         };
-
+        
         options.getValidGarageClientIds = function() {
             return garageClientIds;
         };
-
+        
+        options.getGarageClientDetails = function() {
+            return garageClientDetails;
+        };
+        
         module.exports = options;
 
 These values are pretty straightforward.  You would specifically need to fill in lines 1, 6, and 9-12 with your appropriate values.  Note this file is NOT included in this repo.

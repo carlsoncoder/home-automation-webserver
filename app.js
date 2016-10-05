@@ -124,9 +124,9 @@ var secureServer = https.createServer(certificateConfiguration, app).listen(4443
     var mqttBroker = require('./services/mqtt-server.js').getInstance();
 
     // reset the garage status records
-    garageStatusRepository.initializeOnStartup(configOptions.getValidGarageClientIds(), function(err) {
+    garageStatusRepository.initializeOnStartup(configOptions.getGarageClientDetails(), function(err) {
         if (err) {
-            // CRASH THE APP IF THIS FAILS!
+            // INTENTIONALLY CRASH THE APP IF THIS FAILS!
             process.exit(1);
         }
     });
