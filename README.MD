@@ -2,9 +2,11 @@
 
 This is the source code for my home automation web server
 
-This application is designed to run on an AWS EC2 instance - running Ubuntu 14.04.  It gets very little traffic so I used the t1.nano instance size.
+This application is designed to run on an AWS EC2 instance - running Ubuntu 16.04.  It gets very little traffic so I used the t1.nano instance size.
 
-You will need to setup two inbound port rules on the Security Group assigned to your EC2 instance:
+You need MongoDB for this application.  I used [these instructions](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-16-04 "Install MongoDB") to install it.
+
+You will also need to setup two inbound port rules on the Security Group assigned to your EC2 instance:
 
 * Type - HTTPS, Protocol - TCP, Port Range - 443, Source 0.0.0.0/0
 * Type - Custom TCP Rule, Protocol - TCP, Port Range - 8883, Source 0.0.0.0/0
@@ -67,7 +69,9 @@ Lastly, you will need to create a file called "config.js" in the "config" folder
         
         module.exports = options;
 
-These values are pretty straightforward.  You would specifically need to fill in lines 1, 6, and 9-12 with your appropriate values.  Note this file is NOT included in this repo.
+These values are pretty straightforward.  You would specifically need to fill in your own values for the 'garageClientIds' and 'garageClientDetails' sections.
+Additionally, all of the values in the 'options' variable need to be set with your own values, except MY_NODE_ENV and MONGO_DB_CONNECTION_STRING can stay the same.  Please 
+note that this file is NOT included with this repo, and you will have to add it on your own.
 
 Once you have all of this setup, you'll want to cofigure your NodeJS instance to start automatically on startup.  For this, I use [forever.](https://www.npmjs.com/package/forever "Forever - NPM")  You can install this with the following command:
 
@@ -81,6 +85,8 @@ I've already included a "forever-start" file in the repo as 'forever-start.sh'. 
 We'll now make a startup script that calls our forever-start.sh script.  Create a file (doesn't matter where, just remember the full path to it) called "start-webserver-on-boot.sh".  Put the following in it:
 
         #!/usr/bin/env bash
+        # hack - sleep for 30 seconds to ensure MongoDB has started up successfully
+        sleep 30
         cd /home/ubuntu/home-automation-webserver/
         ./forever-start.sh
 

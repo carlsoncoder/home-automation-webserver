@@ -51,18 +51,27 @@ garageServices.initializeCheckInterval = function(mqttBroker, garageClientIds) {
     // check status every 30 seconds
     var garageCheckInterval = setInterval(function() {
         garageClientIds.forEach(function(clientId) {
+
             var healthCheckTopic = '/garage/' + clientId + '/healthCheck';
+
+            var healthCheckPayload = {};
+            healthCheckPayload.timestamp = dateTimeServices.getCurrentUtcUnixTimestamp();
+
             var healthCheckMessage = {
                 topic: healthCheckTopic,
-                payload: '',
+                payload: JSON.stringify(healthCheckPayload),
                 qos: 0,
                 retain: false
             };
 
             var doorStatusTopic = '/garage/' + clientId + '/doorStatus';
+
+            var doorStatusPayload = {};
+            doorStatusPayload.timestamp = dateTimeServices.getCurrentUtcUnixTimestamp();
+
             var doorStatusMessage = {
                 topic: doorStatusTopic,
-                payload: '',
+                payload: JSON.stringify(doorStatusPayload),
                 qos: 0,
                 retain: false
             };
