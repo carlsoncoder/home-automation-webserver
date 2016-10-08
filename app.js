@@ -67,14 +67,14 @@ app.use(function(req, res, next) {
 if (configOptions.MY_NODE_ENV === 'development')
 {
     app.use(function(err, req, res, next) {
-        logErrorToMongo(err);
+        logError(err);
         res.status(err.status || 500).json({errorMessage: err.message, error: err});
     });
 }
 
 // production error handler - no stack trace shown to user
 app.use(function(err, req, res, next) {
-    logErrorToMongo(err);
+    logError(err);
     res.status(err.status || 500).json({errorMessage: err.message});
 });
 
@@ -107,14 +107,8 @@ function onError(error) {
     }
 }
 
-function logErrorToMongo(error) {
+function logError(error) {
     console.log(error.message + '--' + error + '--' + error.stack);
-    exceptionRepository.saveException(error, function(err, savedError) {
-        if (err) {
-            console.log('An error occurred while trying to save the error');
-            console.log(err.message + '--' + err + '--' + err.stack);
-        }
-    });
 }
 
 var secureServer = https.createServer(certificateConfiguration, app).listen(4443, function() {
@@ -130,13 +124,21 @@ var secureServer = https.createServer(certificateConfiguration, app).listen(4443
             process.exit(1);
         }
     });
+
+    // clear out the application exception message records
+    exceptionRepository.initializeOnStartup(function(err) {
+        if (err) {
+            // INTENTIONALLY CRASH THE APP IF THIS FAILS!
+            process.exit(1);
+        }
+    });
 });
 
 secureServer.on('error', onError);
 
 // Final catch of any errors in the process - Catch any uncaught errors that weren't wrapped in a try/catch statement
 process.on('uncaughtException', function(err) {
-    logErrorToMongo(err);
+    logError(err);
 });
 
 module.exports = app;

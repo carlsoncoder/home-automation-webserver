@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Exception = mongoose.model('Exception');
+var dateTimeServices = require('../services/datetimeservices.js');
 
 var exceptionRepository = {};
 
@@ -13,17 +14,30 @@ exceptionRepository.loadAll = function(callback) {
     });
 };
 
-exceptionRepository.saveException = function(error, callback) {
-    var caughtError = new Exception();
-    caughtError.message = error.message;
-    caughtError.stack = error.stack;
-    caughtError.name = error.name;
-    caughtError.save(function(err, savedError) {
+exceptionRepository.saveException = function(clientId, category, topic, message, callback) {
+    var exception = new Exception();
+    exception.clientId = clientId;
+    exception.whenOccurred = dateTimeServices.getCurrentUtcDate();
+    exception.category = category;
+    exception.topic = topic;
+    exception.message = message;
+
+    exception.save(function(err, savedException) {
         if (err) {
-            return callback(err);
+            callback(err);
         }
 
-        return callback(null, savedError);
+        callback(null);
+    });
+};
+
+exceptionRepository.initializeOnStartup = function(callback) {
+    Exception.remove({}, function(err) {
+        if (err) {
+            callback(err)
+        }
+
+        callback(null)
     });
 };
 

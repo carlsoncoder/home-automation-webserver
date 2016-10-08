@@ -18,14 +18,23 @@ garageServices.handleMessageReply = function(packet, client) {
     var shouldUpdate = true;
     var garageStatus = { clientId: clientId };
     var currentUtcDate = dateTimeServices.getCurrentUtcDate();
+    var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
 
-    if (packet.topic.indexOf('/healthCheck/reply') > -1) {
+    if (jsonPayload.error) {
+        // Client reported an error during execution of message - log it and do nothing else
+        shouldUpdate = false;
+
+        exceptionRepository.saveException(clientId, 'garage', packet.topic, jsonPayload.error, function(err) {
+            if (err) {
+                console.log(err.message + '--' + err + '--' + err.stack); 
+            }
+        });
+    }
+    else if (packet.topic.indexOf('/healthCheck/reply') > -1) {
         garageStatus.lastHealthCheckDateTime = currentUtcDate;
     }
     else if (packet.topic.indexOf('/doorStatus/reply') > -1) {
         garageStatus.lastDoorStatusDateTime = currentUtcDate;
-
-        var jsonPayload = JSON.parse(packet.payload.toString("utf8"));
         garageStatus.currentDoorStatus = jsonPayload.doorStatus;
     }
     else {
@@ -36,10 +45,10 @@ garageServices.handleMessageReply = function(packet, client) {
     if (shouldUpdate === true) {
         garageStatusRepository.updateStatusRecord(garageStatus, function (err) {
             if (err) {
-                exceptionRepository.saveException(err, function (exceptionError, savedError) {
+                var fullMessage = 'Unable to save updated garage status - assume values are stale: ' + err.message;
+                exceptionRepository.saveException(clientId, 'garage', packet.topic, fullMessage, function(err) {
                     if (err) {
-                        console.log('An error occurred while trying to save the error');
-                        console.log(exceptionError)
+                        console.log(err.message + '--' + err + '--' + err.stack);
                     }
                 });
             }
