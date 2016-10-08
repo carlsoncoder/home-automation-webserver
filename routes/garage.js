@@ -1,5 +1,4 @@
 var express = require('express');
-var passport = require('passport');
 var jwt = require('express-jwt');
 var configOptions = require('../config/config.js');
 var garageStatusRepository = require('../services/garagestatusrepository.js');
@@ -69,7 +68,7 @@ function buildDoorActionMessage(clientId, isOpen) {
         retain: false
     };
 
-    console.log('Door Action Message: ' + JSON.stringify(message));
+    console.log('Door Action Message Created: ' + JSON.stringify(message));
     
     return message;
 }

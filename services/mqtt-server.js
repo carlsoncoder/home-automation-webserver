@@ -11,6 +11,12 @@ function mosca_authenticate(client, username, password, callback) {
         if (username.toString() === configOptions.MOSCA_USERNAME && password.toString() === configOptions.MOSCA_PASSWORD) {
             authenticated = true;
         }
+        else {
+            console.log('Invalid username and/or password submitted in attempt to connect to MQTT server: ' + username.toString());
+        }
+    }
+    else {
+        console.log('Invalid clientId attempted to connect to MQTT server: ' + client.id);
     }
 
     callback(null, authenticated)

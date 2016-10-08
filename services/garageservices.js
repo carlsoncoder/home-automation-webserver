@@ -87,7 +87,7 @@ garageServices.initializeCheckInterval = function(mqttBroker, garageClientIds) {
 
             mqttBroker.publish(healthCheckMessage, function() {
                 mqttBroker.publish(doorStatusMessage, function() {
-                })
+                });
             });
         });
     }, 30000);
