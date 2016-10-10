@@ -5,9 +5,8 @@ var dateTimeServices = require('./datetimeservices.js');
 var garageServices = {};
 
 garageServices.handleMessageReply = function(packet, client) {
-    // three possible queues could (*should*) come into this function
+    // two possible queues could (*should*) come into this function
         //      /garage/{clientId}/healthCheck/reply
-        //      /garage/{clientId}/doorStatus/reply
         //      /garage/{clientId}/doorAction/reply  **Note, we don't actually care about this one, since we have to re-poll anyway for the status later (give it time to open/close)
 
     // parse the clientId first
@@ -32,9 +31,6 @@ garageServices.handleMessageReply = function(packet, client) {
     }
     else if (packet.topic.indexOf('/healthCheck/reply') > -1) {
         garageStatus.lastHealthCheckDateTime = currentUtcDate;
-    }
-    else if (packet.topic.indexOf('/doorStatus/reply') > -1) {
-        garageStatus.lastDoorStatusDateTime = currentUtcDate;
         garageStatus.currentDoorStatus = jsonPayload.doorStatus;
     }
     else {
@@ -73,22 +69,7 @@ garageServices.initializeCheckInterval = function(mqttBroker, garageClientIds) {
                 retain: false
             };
 
-            var doorStatusTopic = '/garage/' + clientId + '/doorStatus';
-
-            var doorStatusPayload = {};
-            doorStatusPayload.timestamp = dateTimeServices.getCurrentUtcUnixTimestamp();
-
-            var doorStatusMessage = {
-                topic: doorStatusTopic,
-                payload: JSON.stringify(doorStatusPayload),
-                qos: 0,
-                retain: false
-            };
-
-            mqttBroker.publish(healthCheckMessage, function() {
-                mqttBroker.publish(doorStatusMessage, function() {
-                });
-            });
+            mqttBroker.publish(healthCheckMessage, function() { } );
         });
     }, 30000);
 

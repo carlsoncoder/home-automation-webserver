@@ -10,6 +10,8 @@ garageStatusRepository.findStatusRecord = function(clientId, callback) {
             return callback(err);
         }
 
+        cleanUpStatusObject(garageStatus);
+
         return callback(null, garageStatus);
     });
 };
@@ -20,6 +22,10 @@ garageStatusRepository.loadAll = function(callback) {
         if (err) {
             return callback(err);
         }
+
+        statuses.forEach(function(status) {
+           cleanUpStatusObject(status);
+        });
 
         return callback(null, statuses);
     });
@@ -34,10 +40,6 @@ garageStatusRepository.updateStatusRecord = function(garageStatus, callback) {
         
         if (garageStatus.lastHealthCheckDateTime) {
             existingGarageStatus.lastHealthCheckDateTime = garageStatus.lastHealthCheckDateTime;
-        }
-        
-        if (garageStatus.lastDoorStatusDateTime) {
-            existingGarageStatus.lastDoorStatusDateTime = garageStatus.lastDoorStatusDateTime;
         }
         
         if (garageStatus.currentDoorStatus) {
@@ -68,7 +70,6 @@ garageStatusRepository.initializeOnStartup = function(garageClientDetails, callb
                 garageStatus.description = garageDetail.description;
                 garageStatus.sortOrder = garageDetail.sortOrder;
                 garageStatus.lastHealthCheckDateTime = null;
-                garageStatus.lastDoorStatusDateTime = null;
                 garageStatus.currentDoorStatus = null;
                 garageStatus.save(function(err, newStatus) {
                    if (err) {
@@ -78,7 +79,12 @@ garageStatusRepository.initializeOnStartup = function(garageClientDetails, callb
                 
             });
         }
-    })
+    });
 };
+
+function cleanUpStatusObject(garageStatus) {
+    delete garageStatus.__v;
+    delete garageStatus._id;
+}
 
 module.exports = garageStatusRepository;

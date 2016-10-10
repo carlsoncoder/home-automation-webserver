@@ -5,7 +5,6 @@ var GarageStatusSchema = new mongoose.Schema({
     description: String,
     sortOrder: Number,
     lastHealthCheckDateTime: Date,
-    lastDoorStatusDateTime: Date,
     currentDoorStatus: String // 'open' or 'closed'
 });
 
