@@ -21,10 +21,10 @@ UserSchema.methods.hasValidPassword = function(password) {
 
 UserSchema.methods.generateJWT = function() {
 
-    //set expiration to 7 days
+    //set expiration to 30 days (one month)
     var today = new Date();
     var expires = new Date(today);
-    expires.setDate(today.getDate() + 7);
+    expires.setDate(today.getDate() + 30);
 
     return jwt.sign(
         {
