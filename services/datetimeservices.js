@@ -1,18 +1,14 @@
 var dateTimeServices = {};
 
 dateTimeServices.getCurrentUtcDate = function() {
-    return getUtcDateTime();
+    var current = new Date();
+    return new Date(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate(), current.getUTCHours(), current.getUTCMinutes(), current.getUTCSeconds());
 };
 
 dateTimeServices.getCurrentUtcUnixTimestamp = function() {
     // returns the seconds from epoch until current UTC date/time
-    var utcNow = getUtcDateTime();
-    return Math.floor(utcNow.getTime() / 1000);
-};
-
-function getUtcDateTime() {
     var current = new Date();
-    return new Date(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate(), current.getUTCHours(), current.getUTCMinutes(), current.getUTCSeconds());
-}
+    return Math.floor(current.getTime() / 1000);
+};
 
 module.exports = dateTimeServices;
